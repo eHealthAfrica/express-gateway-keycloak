@@ -1,4 +1,4 @@
-import * as eg from 'express-gateway';
+import { ExpressGateway } from 'express-gateway';
 import { createLoggerWithLabel } from 'express-gateway/lib/logger';
 import * as express from 'express';
 import * as Keycloak from 'keycloak-connect';
