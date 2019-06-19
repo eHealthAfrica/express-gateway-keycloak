@@ -2,7 +2,7 @@
   "name": "express-gateway-keycloak",
   "version": "0.0.39",
   "description": "Keycloak plugin for express gateway",
-  "main": "./lib/index.js",
+  "main": "./manifest.js",
   "scripts": {
     "build": "tsc"
   },
