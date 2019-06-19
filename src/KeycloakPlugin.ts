@@ -9,18 +9,18 @@ const logger = createLoggerWithLabel('[EG:plugin:keycloak]');
 
 const MemoryStore = createMemoryStore(session);
 
-interface IKeycloakPluginSettings {
+export interface IKeycloakPluginSettings {
   session?: any;
   keycloakConfig?: any;
 }
 
-const DefaultKeycloakPluginSettings: IKeycloakPluginSettings = {
+export const DefaultKeycloakPluginSettings: IKeycloakPluginSettings = {
   session: {
     secret: 'kc_secret'
   }
 };
 
-const KeycloakPlugin: ExpressGateway.Plugin = {
+export const KeycloakPlugin: ExpressGateway.Plugin = {
   version: '1.2.0',
   policies: ['keycloak-protect'],
   init: (ctx: ExpressGateway.PluginContext) => {
@@ -128,9 +128,4 @@ const KeycloakPlugin: ExpressGateway.Plugin = {
   }
 };
 
-export {
-  IKeycloakPluginSettings,
-  DefaultKeycloakPluginSettings,
-  KeycloakPlugin,
-  KeycloakPlugin as default
-};
+export default KeycloakPlugin;
