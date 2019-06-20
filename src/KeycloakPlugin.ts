@@ -60,10 +60,23 @@ export default class KeycloakPlugin implements ExpressGateway.Plugin {
       pluginSettings.keycloakConfig
     );
 
-    logger.info('Initialized Keycloak Plugin');
+    logger.info(
+      `Initialized Keycloak Plugin with settings: ${JSON.stringify(
+        pluginSettings,
+        null,
+        '\t'
+      )}`
+    );
 
-    keycloak.authenticated = (_req: Request) => {
-      logger.info('-- Keycloak Authenticated');
+    keycloak.authenticated = (req: Request) => {
+      logger.info(
+        '-- Keycloak Authenticated: ' +
+          JSON.stringify(
+            (req as any).kauth.grant.access_token.content,
+            null,
+            '\t'
+          )
+      );
     };
 
     keycloak.accessDenied = (_req: Request, res: Response) => {
