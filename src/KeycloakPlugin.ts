@@ -1,11 +1,10 @@
-import * as createMemoryStore from 'memorystore';
-import * as session from 'express-session';
-
 import { Request, RequestHandler, Response } from 'express';
 
 import { ExpressGateway } from 'express-gateway';
 import Keycloak from 'keycloak-connect-multirealm';
 import { createLoggerWithLabel } from 'express-gateway/lib/logger';
+import createMemoryStore from 'memorystore';
+import session from 'express-session';
 
 const logger = createLoggerWithLabel('[EG:plugin:keycloak]');
 
