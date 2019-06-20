@@ -16,8 +16,8 @@
   "devDependencies": {
     "@types/express": "^4.16.0",
     "@types/node": "^10.12.18",
-    "express-gateway": "^1.16.4",
     "json-schema": "^0.2.3",
+    "express-gateway": "^1.14.0",
     "ts-node": "^8.3.0",
     "typescript": "^3.2.2"
   }
