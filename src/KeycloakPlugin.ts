@@ -52,6 +52,7 @@ export default class KeycloakPlugin implements ExpressGateway.Plugin {
     };
     const realmConfig: RealmConfig = rawSettings.realm as RealmConfig;
     const pluginSettings: IKeycloakPluginSettings = {
+      realm: realmConfig,
       session: sessionSettings,
       keycloakConfig: keycloakConfig
     };
