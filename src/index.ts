@@ -1,1 +1,5 @@
-export { KeycloakPlugin as default } from './KeycloakPlugin';
+import KeycloakPlugin from './KeycloakPlugin';
+
+const plugin = new KeycloakPlugin();
+
+export default plugin;
