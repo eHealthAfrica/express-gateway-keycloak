@@ -1,29 +1,43 @@
+import { Request, RequestHandler, Response } from 'express';
+
 import { ExpressGateway } from 'express-gateway';
+import Keycloak from 'keycloak-connect-multirealm';
 import { createLoggerWithLabel } from 'express-gateway/lib/logger';
-import * as express from 'express';
-import * as Keycloak from 'keycloak-connect';
-import * as session from 'express-session';
-import * as createMemoryStore from 'memorystore';
+import createMemoryStore from 'memorystore';
+import session from 'express-session';
 
 const logger = createLoggerWithLabel('[EG:plugin:keycloak]');
 
 const MemoryStore = createMemoryStore(session);
 
+export type RealmConfig = {
+  in: 'body' | 'header' | 'query' | 'routeParam';
+  key: string;
+};
+
 export interface IKeycloakPluginSettings {
+  realm?: RealmConfig;
   session?: any;
   keycloakConfig?: any;
 }
 
+export const defaultRealmConfig: RealmConfig = {
+  in: 'routeParam',
+  key: 'realm'
+};
+
 export const DefaultKeycloakPluginSettings: IKeycloakPluginSettings = {
   session: {
     secret: 'kc_secret'
-  }
+  },
+  realm: defaultRealmConfig
 };
 
-export const KeycloakPlugin: ExpressGateway.Plugin = {
-  version: '1.2.0',
-  policies: ['keycloak-protect'],
-  init: (ctx: ExpressGateway.PluginContext) => {
+export default class KeycloakPlugin implements ExpressGateway.Plugin {
+  version: string = '1.2.0';
+  policies: string[] = ['keycloak-protect'];
+
+  init = (ctx: ExpressGateway.PluginContext) => {
     // this is slightly dodgy casting, as they don't expose settings on the public interface - but not sure how else you can access custom settings for a plugin
     const sessionStore = new MemoryStore();
     const rawSettings: IKeycloakPluginSettings = (ctx as any).settings;
@@ -36,7 +50,9 @@ export const KeycloakPlugin: ExpressGateway.Plugin = {
       ...DefaultKeycloakPluginSettings.keycloakConfig,
       ...rawSettings.keycloakConfig
     };
+    const realmConfig: RealmConfig = rawSettings.realm as RealmConfig;
     const pluginSettings: IKeycloakPluginSettings = {
+      realm: realmConfig,
       session: sessionSettings,
       keycloakConfig: keycloakConfig
     };
@@ -53,16 +69,24 @@ export const KeycloakPlugin: ExpressGateway.Plugin = {
       )}`
     );
 
-    keycloak.authenticated = req => {
+    keycloak.authenticated = (req: Request) => {
       logger.info(
         '-- Keycloak Authenticated: ' +
-          JSON.stringify(req.kauth.grant.access_token.content, null, '\t')
+          JSON.stringify(
+            (req as any).kauth.grant.access_token.content,
+            null,
+            '\t'
+          )
       );
     };
 
-    keycloak.accessDenied = (req, res) => {
+    keycloak.accessDenied = (_req: Request, res: Response) => {
       logger.info('-- Keycloak Access Denied');
       res.status(403).end('Access Denied');
+    };
+
+    keycloak.getRealmNameFromRequest = (req: Request) => {
+      return this.getRealmName(req, realmConfig);
     };
 
     // setup our keycloak middleware
@@ -93,7 +117,7 @@ export const KeycloakPlugin: ExpressGateway.Plugin = {
           }
         }
       },
-      policy: (actionParams: any): express.RequestHandler => {
+      policy: (actionParams: any): RequestHandler => {
         logger.info(
           `-- Keycloak Protect: ${JSON.stringify(actionParams, null, '\t')}`
         );
@@ -108,24 +132,47 @@ export const KeycloakPlugin: ExpressGateway.Plugin = {
         return keycloak.protect(actionParams.role);
       }
     });
-  },
-  schema: {
-    $id: 'http://express-gateway.io/schemas/plugin/keycloak.json',
-    type: 'object',
-    properties: {
-      session: {
-        title: 'Session Settings',
-        description: 'Session Settings as outlined by express middleware',
-        type: 'object'
-      },
-      keycloakConfig: {
-        title: 'Keycloak Configuration',
-        description:
-          'This can be used rather than requiring keycloak.json to be present',
-        type: 'object'
-      }
-    }
-  }
-};
+  };
 
-export default KeycloakPlugin;
+  get schema() {
+    return {
+      $id: 'http://express-gateway.io/schemas/plugin/keycloak.json',
+      type: 'object',
+      properties: {
+        session: {
+          title: 'Session Settings',
+          description: 'Session Settings as outlined by express middleware',
+          type: 'object'
+        },
+        keycloakConfig: {
+          title: 'Keycloak Configuration',
+          description:
+            'This can be used rather than requiring keycloak.json to be present',
+          type: 'object'
+        }
+      }
+    };
+  }
+
+  private getRealmName = (req: Request, realmConfig: RealmConfig): string => {
+    let realm: string;
+
+    switch (realmConfig.in) {
+      case 'routeParam':
+        realm = (req.params[realmConfig.key] || '').toString();
+      case 'header':
+        realm = (req.get(realmConfig.key) || '').toString();
+      case 'query':
+        realm = (req.query[realmConfig.key] || '').toString();
+      case 'body':
+        realm = (req.body ? req.body[realmConfig.key] || '' : '').toString();
+      default:
+        logger.warning(
+          'Failed to extract realm from request. Reason: invalid realm config.'
+        );
+        realm = '';
+    }
+
+    return realm;
+  };
+}
