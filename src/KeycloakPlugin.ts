@@ -167,7 +167,7 @@ export default class KeycloakPlugin implements ExpressGateway.Plugin {
       case 'body':
         realm = (req.body ? req.body[realmConfig.key] || '' : '').toString();
       default:
-        logger.warning(
+        logger.warn(
           'Failed to extract realm from request. Reason: invalid realm config.'
         );
         realm = '';
