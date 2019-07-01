@@ -86,7 +86,7 @@ export default class KeycloakPlugin implements ExpressGateway.Plugin {
     };
 
     keycloak.getRealmNameFromRequest = (req: Request) => {
-      return this.getRealmName(req, realmConfig);
+      return this.extractRealmName(req, realmConfig);
     };
 
     // setup our keycloak middleware
@@ -154,7 +154,7 @@ export default class KeycloakPlugin implements ExpressGateway.Plugin {
     };
   }
 
-  private getRealmName = (req: Request, realmConfig: RealmConfig): string => {
+  private extractRealmName = (req: Request, realmConfig: RealmConfig): string => {
     let realm: string;
 
     switch (realmConfig.in) {

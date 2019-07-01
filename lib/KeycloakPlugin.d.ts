@@ -30,5 +30,5 @@ export default class KeycloakPlugin implements ExpressGateway.Plugin {
             };
         };
     };
-    private getRealmName;
+    private extractRealmName;
 }
