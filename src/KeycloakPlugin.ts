@@ -160,17 +160,22 @@ export default class KeycloakPlugin implements ExpressGateway.Plugin {
     switch (realmConfig.in) {
       case 'routeParam':
         realm = (req.params[realmConfig.key] || '').toString();
+        break;
       case 'header':
         realm = (req.get(realmConfig.key) || '').toString();
+        break;
       case 'query':
         realm = (req.query[realmConfig.key] || '').toString();
+        break;
       case 'body':
         realm = (req.body ? req.body[realmConfig.key] || '' : '').toString();
+        break;
       default:
         logger.info(`Path "${req.path}" does not specify a Keycloak realm`);
         realm = '';
     }
 
+    logger.info(`params: ${req.params} ... extracted realm: ${realm}`);
     return realm;
   };
 }
