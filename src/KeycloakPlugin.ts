@@ -159,6 +159,7 @@ export default class KeycloakPlugin implements ExpressGateway.Plugin {
 
     switch (realmConfig.in) {
       case 'routeParam':
+        logger.info(`params: ${JSON.stringify(req.params)}`);
         realm = (req.params[realmConfig.key] || '').toString();
         break;
       case 'header':
@@ -175,7 +176,6 @@ export default class KeycloakPlugin implements ExpressGateway.Plugin {
         realm = '';
     }
 
-    logger.info(`params: ${req.params} ... extracted realm: ${realm}`);
-    return realm;
+    return realm || 'master';
   };
 }
